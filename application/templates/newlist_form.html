@@ -1,0 +1,14 @@
+<form method="post">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {% if form.name.errors %}
+            {{ form.name(class="form-control is-invalid") }}
+                <div class="invalid-feedback">
+                    <span>{{ form.name.errors[0] }}</span>
+                </div>
+        {% else  %}
+            {{ form.name(class="form-control", placeholder="Name of the list", autofocus=true) }} 
+        {% endif %}
+        {{ form.submit(class="btn btn-outline-info mb-1") }}
+    </div>
+</form>

@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Buy
+{% endblock %}
+
+{% block main %}
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group mb-3">
+            {% if form.symbol.errors %}
+                {{ form.symbol(class="form-control is-invalid", placeholder="Symbol", autofocus=true) }}
+                <div class="invalid-feedback">
+                    {% for error in form.symbol.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.symbol(class="form-control", placeholder="Symbol", autofocus=true) }}
+            {% endif %}
+        </div>        
+        <div class="form-group mb-3">
+            {% if form.shares.errors %}
+            {{ form.shares(class="form-control is-invalid") }}
+                <div class="invalid-feedback">
+                    <span>{{ form.shares.errors[0] }}</span>
+                </div>
+            {% else  %}
+                {{ form.shares(class="form-control", placeholder="Number of shares") }} 
+            {% endif %}
+        </div>
+        {{ form.submit(class="btn btn-outline-primary") }}
+        <!-- <button id="trigger" type="submit" class="btn btn-outline-primary">Buy</button> -->
+    </form>
+{% endblock %}
+
+   <!-- Modal -->
+        <!-- <div class="modal fade" id="buyModal" tabindex="-1" aria-labelledby="buyModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="buyModalLabel">Confirm purchase   </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to buy?                  
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        {{ form.submit(class="btn btn-outline-primary") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+         -->
+        <!-- <script>
+//             var errors = true;
+// var errors = {% if form.errors %}true{% else %}false{% endif %};
+// if (!errors){
+//     $(document).ready(function(){
+//         $('#trigger').click(function(e){
+//             $('#buyModal').modal('show');
+//             e.preventDefault();
+//         });
+//     });
+// };
+        </script> -->
+

@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Quote
+{% endblock %}
+
+{% block main %}
+
+{% if qt %}
+
+    <p>A share of {{ qt.name }} ({{ qt.symbol }}) costs ${{ qt.price }}.</p>
+    {% if lists %}
+        <form action="/quote" method="post">
+            {{ add_form.hidden_tag() }}
+            <div class="form-group mb-5">
+                {{ add_form.list_name(class="form-control mb-3", autofocus=true) }}
+                {{ add_form.submit(class="btn btn-outline-info mb-1") }}
+            </div>
+        </form>
+    {% else %}
+        <p>You can add share to favourites. <a href="url_for('lists')">Create</a> a list first.</p>
+    {% endif %}
+    
+
+{% else %}
+
+    <form action="/quote" method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group mb-3">
+            {{ form.symbol(class="form-control mb-3", placeholder="Symbol", autofocus=true) }}
+            {{ form.submit(class="btn btn-outline-primary mb-1") }}
+        </div>
+    </form>
+
+{% endif %}
+
+
+{% endblock %}

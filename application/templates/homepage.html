@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Homepage
+{% endblock %}
+
+{% block main %}
+<div class="jumbotron">
+    <h1 class="display-4">Stock Explorer</h1>
+    <p class="lead">Search, buy, sell and analyze stocks. Create portfolio, lists and notifications. Watch how you are
+        getting rich.</p>
+    <hr class="my-4">
+    <p>Wanna try? <a class="text-decoration-none" href="{{ url_for('register') }}">Create account.</a> Already have one?
+         <a class="text-decoration-none" href="{{ url_for('login') }}">Sing in.</a> </p>
+</div>
+
+{% endblock %}

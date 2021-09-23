@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Sell
+{% endblock %}
+
+{% block main %}
+{% if holdings %}
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group mb-3">
+            {{ form.company(class="form-control", autofocus=true) }}        
+        </div>
+        <div class="form-group mb-3">
+            {% if form.shares.errors %}
+                {{ form.shares(class="form-control is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for error in form.shares.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>        
+            {% else %}
+                {{ form.shares(class="form-control", placeholder="Number of shares") }}
+            {% endif %}
+        </div>
+        {{ form.submit(class="btn btn-outline-primary") }}
+    </form>
+{% else %}
+    <p>You have ${{ current_user.cash }} in cash.</p>
+    <p>Let's go <a class="text-decoration-none" href="{{ url_for('buy') }}">buy</a> some stocks.</p>
+{% endif %}
+
+{% endblock %}
+
+

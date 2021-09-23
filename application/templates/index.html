@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Holdings
+{% endblock %}
+
+{% block main %}
+
+{% if holdings %}
+    <!--Represent total holdings-->
+    <h4>
+        {% if delta > 0 %}
+            <th>
+                <div>${{ (total + cash)|round(2, 'common') }}</div>
+                <div class="text-danger">-${{ delta|round(2, 'common') }} <span class="text-muted">|</span> -{{ (delta * 100 / (total + cash))|round(2, 'common') }} %</div>
+            </th>
+
+        {% elif (delta|round(2, 'common')) == 0 %}
+            <th>
+                <div>${{ (total + cash)|round(1, 'common') }}</div>
+                <div class="text-muted">$0.00 | 0 %</div>
+            </th>
+                    
+        {% else %}
+            <th>
+                <div>${{ (total + cash)|round(2, 'common') }}</div>
+                <div class="text-success">+${{ -(delta|round(2, 'common')) }} <span class="text-muted">|</span> +{{ -((delta * 100 / (total + cash))|round(2, 'common')) }} %</div>
+            </th>
+        {% endif %}    
+    </h4>
+    <!--Table with assets-->
+    <table class="table table-hover table-bordered table-responsive">
+        <thead>
+            <tr>
+                <th class="text-start ps-3">Shares</th>
+                <th>${{ total|round(2, 'common') }} | {{ (total / (cash + total) * 100)|round(2, 'common') }} %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in holdings %}
+            <tr>
+                <td class="text-start ps-3">
+                    <div>{{ stock.company }} ({{ stock.symbol }})</div>
+                    <div class="text-muted">{{ stock.shares }} &#183; ${{ stock.price|round(2, 'common') }}</div>
+                </td>
+                <td>
+                    <div>${{ stock.total|round(2, 'common') }}</div>
+                    {% if stock.price > stock.mean_price %}
+                        <div class="text-success">&#8593;${{ ((stock.price - stock.mean_price) * stock.shares)|round(2, 'common') }} | {{ ((stock.price - stock.mean_price) * 100 / stock.mean_price)|round(2, 'common') }} %</div>
+                        
+                    {% elif (stock.mean_price|round(2, 'common')) == (stock.price|round(2, 'common')) %}
+                        <div class="text-muted">$0.00 | 0 %</div>
+
+                    {% else %}
+                        <div class="text-danger">&#8595;${{ ((stock.mean_price - stock.price) * stock.shares)|round(2, 'common') }} | {{ ((stock.mean_price - stock.price) * 100 / stock.mean_price)|round(2, 'common') }} %</div>
+
+                    {% endif %}
+                    
+                </td>
+            </tr>
+            {% endfor %}
+            <!--Cash-->
+            <tr>
+                <th class="text-start ps-3">CASH</th>
+                <th>${{ cash|round(2, 'common') }} | {{ (cash / (cash + total) * 100)|round(2, 'common') }} %</th>
+            </tr>
+            
+        </tbody>
+    </table>
+
+{% else %}
+
+    <p>You have ${{ current_user.cash }} in cash.</p>
+    <p>Let's go <a class="text-decoration-none" href="{{ url_for('buy') }}">buy</a> some stocks.</p>
+
+{% endif %}
+
+{% endblock %}

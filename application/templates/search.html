@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Search
+{% endblock %}
+
+{% block main %}
+
+    
+<form action="/search" method="post">
+    {{ form.hidden_tag() }}
+    <div class="form-group mb-5">
+        {{ form.name(class="form-control mb-3", autofocus=true) }}
+        {{ form.submit(class="btn btn-outline-info mb-1") }}
+    </div>
+</form>
+    
+
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript" src="/static/search.js"></script>
+{% endblock %}
