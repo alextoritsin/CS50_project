@@ -115,13 +115,11 @@ class SearchForm(FlaskForm):
     submit = SubmitField('Search')
 
     def validate_name(self, field):
-        # submit = field.data
         submit = field.data.split(',')
         symbols = []
         for item in submit:
             if len(item) > 1:
                 symbols.append(item.strip(" "))
-        # submit = [item.strip(" ") for item in submit if len(item) > 0]
         print("submit:", symbols)
         with cf.ThreadPoolExecutor() as executor:
             responds = executor.map(lookup, symbols)
