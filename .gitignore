@@ -1,2 +1,4 @@
-/venv
-/.vscode
+venv
+.vscode
+application\__pycache__
+requirements.txt
