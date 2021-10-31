@@ -1,4 +1,5 @@
 venv
 .vscode
 requirements.txt
-application\__pycache__
+application\__pycache__\
+application\stocks.db
