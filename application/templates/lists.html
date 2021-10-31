@@ -5,47 +5,51 @@
 {% block main %}
 
 {% if lists %}
-<!-- Accordion with lists and companies -->
-  <div class="accordion-container">
-    {% for list in favourites %}
-      <div class="set mb-2">      
-        <a href="#">
-          <div class="container">
-            <div class="row">
-              <div class="col-8">
-                {{ list.name }}
-              </div>
-              <div class="col-4 ">
-                <button type="button" class="btn py-0 mb-1 icon" data-bs-toggle="modal" data-bs-target="#Modal-{{ list.id }}"><i class="fas fa-edit"></i></button>
-                <button type="button" class="btn py-0 mb-1 icon" data-bs-toggle="modal" data-bs-target="#{{ list.name }}Modal"><i class="far fa-trash-alt"></i></button>
-                <i id="plus" class="fa fa-plus"></i>
-              </div>
-            </div>
-          </div>
-        </a>
-        <div class="content">
-          {% if list.assets %}
-            {% for name in list.assets %}
-              <div class="container text-start ms-2">
-                {{ name.company }}
-              </div>
-            {% endfor %}
-          {% else %}
-            <div class="container">
-              You don't have favourite stocks!  <a href="{{ url_for('quote') }}">Quote</a> assets.
-            </div>
-          {% endif %}
-        </div>
-      </div>
-      {% include 'modals.html' %}
-    {% endfor %}
-  </div>
-  <h5 class="my-3">Create new list</h5>
-  {% include 'newlist_form.html' %}
+
+
+	<div class="accordion-container">
+		{% for list in lists %}
+			<div class="set mb-2">      
+				<a href="#">
+				<div class="container">
+					<div class="row">
+					<div class="col-8">
+						{{ list.name }}
+					</div>
+					<div class="col-4 ">
+						<button type="button" class="btn py-0 mb-1 icon" data-bs-toggle="modal" data-bs-target="#Modal-{{ list.id }}"><i class="fas fa-edit"></i></button>
+						<button type="button" class="btn py-0 mb-1 icon" data-bs-toggle="modal" data-bs-target="#{{ list.name }}Modal"><i class="far fa-trash-alt"></i></button>
+						<i id="plus" class="fa fa-plus"></i>
+					</div>
+					</div>
+				</div>
+				</a>
+				<div class="content">
+				{% if list.assets %}
+					{% for name in list.assets %}
+					<div class="container text-start ms-2">
+						{{ name.company }}
+					</div>
+					{% endfor %}
+				{% else %}
+					<div class="container">
+					You don't have favourite stocks!  <a class="text-decoration-none" 
+					href="{{ url_for('quote') }}">Quote</a> assets.
+					</div>
+				{% endif %}
+				</div>
+			</div>
+			{% include 'modals.html' %}
+		{% endfor %}
+	</div>
+	<div class="container mt-4">
+		<h5 class="my-3">Create new list</h5>
+		{% include 'newlist_form.html' %}
+	</div>
 
 {% else %}
 <!-- If lists didn't created yet -->
-    <p>You don't have lists yet! lets create a new one.</p>
+    <p class="mt-2" >You don't have lists yet! lets create a new one.</p>
     {% include 'newlist_form.html' %}
     
 {% endif %}
@@ -53,7 +57,7 @@
 {% endblock %}
 
 {% block script %}
-<script src="/static/del_button.js"></script>
+	<script src="/static/del_button.js"></script>
 {% endblock %}
 
 

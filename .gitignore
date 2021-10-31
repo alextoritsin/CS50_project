@@ -1,3 +1,4 @@
 venv
 .vscode
-application/__pycache__
+requirements.txt
+application\__pycache__

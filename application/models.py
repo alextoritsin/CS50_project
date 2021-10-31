@@ -99,16 +99,16 @@ class Lists(db.Model):
         db.session.add(self)
         db.session.commit()
 
-
 class Favourites(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     company = db.Column(db.String(60), nullable=False)
     symbol = db.Column(db.String(10), nullable=False)
     # price = db.Column(db.Float(precision=32, asdecimal=False, decimal_return_scale=None))
-    list_id = db.Column(db.String(), db.ForeignKey('lists.id'), nullable=False)
+    list_id = db.Column(db.Integer(), db.ForeignKey('lists.id'), nullable=False)  
+    user_id = db.Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
     
     def __repr__(self):
-        return f'<{self.company}({self.symbol})>'
+        return f'<{self.symbol} in list {self.list_id}>'
 
     def add_tolist(self, user_obj, list_id, company, symbol):
         self.user_id = user_obj.id
@@ -116,8 +116,4 @@ class Favourites(db.Model):
         self.company = company
         self.symbol = symbol
         db.session.add(self)
-        db.session.commit()
-
-    
-
-
+        # db.session.commit()

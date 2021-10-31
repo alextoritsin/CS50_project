@@ -11,6 +11,7 @@ function loadComp(){
 loadComp();
 
 $(document).ready(function() {
+    
 
     // Overrides the default autocomplete filter function
     // to search only from the beginning of the string
@@ -29,32 +30,14 @@ $(document).ready(function() {
     }
 
     // Initialize jquery autocomplete
-    $("#name")
-    // don't navigate away from the field on tab when selecting an item
-    .on( "keydown", function( event ) {
-        if ( event.keyCode === $.ui.keyCode.TAB &&
-            $( this ).autocomplete( "instance" ).menu.active ) {
-          event.preventDefault();
-        }
-    })
-    .autocomplete( {
+    $("#symbol").autocomplete( {
         minLength: 3,
         autoFocus: true,
         source: function (request, response) {
             var results = $.ui.autocomplete.filter(companies, extractLast(request.term));
             response(results.slice(0, 10));
-        },
-        focus: function() {return false;},
-        select: function( event, ui ) {
-            var terms = split( this.value );
-            // remove the current input
-            terms.pop();
-            // add the selected item
-            terms.push( ui.item.value );
-            // add placeholder to get the comma-and-space at the end
-            terms.push( "" );
-            this.value = terms.join( ", " );
-            return false;
         }
+        
     });
 });
+    

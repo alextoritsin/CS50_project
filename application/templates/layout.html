@@ -15,17 +15,20 @@
     <link href="/static/favicon.ico" rel="icon">
 
     <link href="/static/styles.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/autocomplete.css">
     
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous">
 
+    {% block style %}{% endblock %}
     <title>StockX: {% block title %}{% endblock %}</title>
     
     <!--jQuery library-->
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/static/jquery-ui.css">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+    
+    <script src="/static/jquery-ui.js"></script>
 
 </head>
 
@@ -42,19 +45,20 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('quote') }}">Quote</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('search') }}">Search</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('search') }}">Compare</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('buy') }}">Buy</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('sell') }}">Sell</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('lists') }}">Lists</a></li>
+                        <!-- <li class="nav-item"><a class="nav-link" href="{{ url_for('add_asset') }}">Add</a></li> -->
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('history') }}">History</a></li>
                     </ul>
                     <ul class="navbar-nav ms-auto mt-2">
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Account</a>
                             <ul class="dropdown-menu">
-                              <li><a class="dropdown-item" href="#">Deposit Cash</a></li>
-                              <li><hr class="dropdown-divider"></li>
-                              <li><a class="dropdown-item" href="{{ url_for('password_change') }}">Change Password</a></li>
+                                <li><a class="dropdown-item" href="#">Deposit Cash</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('password_change') }}">Change Password</a></li>
                             </ul>
                         </li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Log Out</a></li>
@@ -103,9 +107,9 @@
         {% block main %}{% endblock %}
     </main>
 
-    <footer class="small text-center text-muted">
-        Data provided for free by <a href="https://iextrading.com/developer">IEX</a>. View <a
-            href="https://iextrading.com/api-exhibit-a/">IEX’s Terms of Use</a>.
+    <footer class="small text-center text-muted mb-1">
+        Data provided for free by <a href="https://iextrading.com/developer" class="text-decoration-none">IEX</a>. View <a
+            href="https://iextrading.com/api-exhibit-a/" class="text-decoration-none">IEX’s Terms of Use</a>.
     </footer>
 
 

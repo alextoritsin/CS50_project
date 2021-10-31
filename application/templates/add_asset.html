@@ -1,12 +1,26 @@
 {% extends "layout.html" %}
 
-{% block title %}
-Quote
-{% endblock %}
+{% block title %}Add{% endblock %}
 
 {% block main %}
 
-    <form action="/quote" method="post">
+{% if qt %}
+    <div class="container">
+        <p>A share of {{ qt.name }} costs ${{ qt.price }}</p>
+    </div>
+    <div class="container">
+        <form method="post">
+            {{ add_form.hidden_tag() }}
+            <div class="form-group mb-3">
+                {{ add_form.list_name(class="form-control", autofocus=true) }}
+                {{ add_form.submit(class="btn btn-outline-primary") }}    
+            </div>
+            
+        </form>
+    </div>
+
+{% else %}
+    <form action="/add_asset" method="post">
         {{ form.hidden_tag() }}
         <div class="form-group mb-3">
             <div class="container">
@@ -32,9 +46,9 @@ Quote
                 </div>
             </div>
         </div>        
-    </form> 
+    </form>
+{% endif %}
 
-{% endblock %}
-{% block script %}
-    <script type="text/javascript" src="/static/search_to_buy.js"></script>
+
+
 {% endblock %}

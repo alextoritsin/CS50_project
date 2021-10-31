@@ -1,0 +1,39 @@
+{% macro parse_cash(var) %}
+    {% if var|abs >= 1000000000  %}
+        {{ (var|abs / 1000000000)|round(2, 'common') }}B
+    {% elif var|abs >= 1000000 %}
+        {{ (var / 1000000)|round(2, 'common') }}M
+    {% elif var|abs %}
+        {{ (var / 1000)|round(2, 'common') }}K
+    {% endif %}
+{% endmacro %}
+
+
+{% macro parse_rate(var) %}
+    {{ (var * 100)|round(1, 'common') }}%
+{% endmacro %}
+
+
+{% macro parse_int(var) %}
+    {% if var %}
+        {{ var|int('——') }}
+    {% else %}
+        ——
+    {% endif %}
+{% endmacro %}
+
+
+{% macro parse_round(var) %}
+    {{ var|round(2, 'common') }}
+{% endmacro %}
+
+
+{% macro row(name, content) %}
+    <tr>
+        <td>{{ name }}</td>
+        <td>{{ content }}</td>
+    </tr>
+{% endmacro %}
+
+
+

@@ -9,15 +9,96 @@ Search
     
 <form action="/search" method="post">
     {{ form.hidden_tag() }}
-    <div class="form-group mb-5">
-        {{ form.name(class="form-control mb-3", autofocus=true) }}
-        {{ form.submit(class="btn btn-outline-info mb-1") }}
-    </div>
+    <div class="form-group mb-3">
+        <div class="container">
+            <div class="row justify-content-start mb-3">
+                {{ form.name.label(class="form-control-label") }}
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-auto px-1">
+                    {% if form.name.errors %}
+                        {{ form.name(class="form-control is-invalid", placeholder="Symbol") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.name.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        
+                        {{ form.name(class="form-control", placeholder="Symbols", autofocus=true) }}
+                    {% endif %}
+                </div>
+
+                <div class="col-auto px-1">
+                    {{ form.submit(class="btn btn-outline-primary") }}
+                </div>
+
+            </div>
+        </div>
+    </div>       
+
+
+    <!-- <div class="form-group mb-2">
+        <div class="col-auto px-1">
+            {% if form.name.errors %}
+                {{ form.name(class="form-control is-invalid", placeholder="Symbol") }}
+                <div class="invalid-feedback">
+                    {% for error in form.name.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.name(class="form-control mb-1 me-1", placeholder="Type company's name", autofocus=true) }}  
+            {% endif %}
+        </div>
+        {{ form.submit(class="btn btn-outline-primary mb-1") }}
+    </div> -->
 </form>
+
+{% if g_JSON_one %}
+    <div class="btn-group justify-content-center m-1" role="group" aria-label="Basic outlined example">
+        <button id="one" type="button" class="btn btn-outline-primary">1 Year</button>
+        <button id="two" type="button" class="btn btn-outline-primary">2 Years</button>
+        <button id="five" type="button" class="btn btn-outline-primary">5 Years</button>
+    </div>
+
+    <div class="container">
+        <div class="row p-1">
+            <div class="col">
+                <div id="chart"></div>
+            </div>
+        </div> 
+    </div>
+{% endif %}
+
     
 
 {% endblock %}
 
 {% block script %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script type="text/javascript">
+    var graphs = {{ g_JSON_one | safe }};
+    Plotly.react('chart', graphs, {});
+</script> 
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#one").on("click", function() {
+            Plotly.purge('chart');
+            var graphs1 = {{ g_JSON_one | safe }};
+            Plotly.react("chart", graphs1, {});
+        });
+        $("#two").on("click", function() {
+            Plotly.purge('chart');
+            var graphs2 = {{ g_JSON_two | safe }};
+            Plotly.react("chart", graphs2, {});
+        });
+        $("#five").on("click", function() {
+            Plotly.purge('chart');
+            var graphs5 = {{ g_JSON_five | safe }};
+            Plotly.react("chart", graphs5, {});
+        })
+    });
+</script>
 <script type="text/javascript" src="/static/search.js"></script>
 {% endblock %}

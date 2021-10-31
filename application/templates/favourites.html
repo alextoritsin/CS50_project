@@ -1,0 +1,33 @@
+<!-- The Modal -->
+<div id="myModal" class="modal-fav">
+
+    <!-- Modal content -->
+    <div class="modal-fav-content">
+      <div class="modal-fav-header">
+        <!-- <span class="close-fav">&times;</span> -->
+        <h2>Update Favourites</h2>
+      </div>
+      <form id="favForm" action="{{ url_for('favourites') }}" method="POST">
+        <div class="modal-fav-body text-start">
+                                                      
+          {% if lists|length > 0 %}   
+              {% for list in lists %}
+                <input type="checkbox" {% if list.id in ids %} checked="checked" {% endif %}  
+                id="{{ list.id }}" name="favourites" value="{{ list.name }}">
+                <label class="mb-2" for="{{ list.id }}">{{ list.name }}</label><br >
+            {% endfor %}
+          {% else %}
+              <p>Create list</p>
+          {% endif %}
+          
+        </div>
+        <div class="modal-fav-footer d-flex justify-content-end">
+
+              <input type="submit" value="Update" class="btn btn-outline-primary my-1 me-1">
+              <button type="button" class="btn btn-secondary my-1 close-fav">Close</button>
+
+        </div>
+      </form>
+    </div>
+  
+  </div>

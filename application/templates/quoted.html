@@ -1,23 +1,180 @@
+{% from "macros.html" import parse_cash, parse_rate, parse_int, row %}
 {% extends "layout.html" %}
+
+{% block style %}
+  <link href="/static/favourites.css" rel="stylesheet">
+{% endblock %}
 
 {% block title %}
 Quoted
 {% endblock %}
 
 {% block main %}
-<p>A share of {{ qt.name }} ({{ qt.symbol }}) costs ${{ qt.price }}.</p>
-{% if lists %}
-    <form action="/quoted" method="post">
-        {{ form.hidden_tag() }}
-        <div class="form-group mb-3">
-            {{ form.list_name(class="form-control mb-3", autofocus=true) }}
-            {{ form.submit(class="btn btn-outline-info mb-1") }}
+    <!-- Logo and basic information -->
+    <div class="container mb-4 p-1 desc">
+        <button type="button" id="myBtn" class="btn float-end py-0 mb-1 icon">
+            {% if in_fav %}
+                <i id="fav" class="fas fa-star"></i>
+            {% else %}
+                <i id="fav" class="far fa-star"></i>
+            {% endif %}
+        </button>
+        <div class="row justify-content-center">
+            <div class="col-auto me-2">
+                <img src="{{ quote.logo_url }}" alt="logo" style="width:120px;height:120px;">
+            </div>
+            <div class="col-auto fw-light">
+                <h2>
+                    {{ quote.longName }} <span class="text-muted fs-5">({{ quote.symbol }})</span>
+                </h2>
+                <h6 class="text-start text-muted">{{ quote.country }}, 
+                    {% if quote.state %}{{ quote.state }}, {% endif %}  
+                    {{ quote.city }}
+                </h6>
+                <h6 class="text-start text-muted">{{ quote.sector }}</h6>
+                <h6 class="text-start text-muted">{{ quote.industry }}</h6>
+            </div>
         </div>
-    </form>
-{% else %}
-        <p>You can add share to favourites. <a href="url_for('lists')">Create</a> a list first.</p>
-{% endif %}
+    </div>
+    
+    <!-- Price references -->
+    <div class="container mb-3">
+        <div class="row">
+            <div class="col text-start ms-2">
+                <span class="fs-2 me-2 mb-2">{{ quote.currentPrice|round(2, 'common') }} $</span>
+                {% if dif > 0 %}
+                    <span class="fs-4 text-danger me-2">{{ -delta }} %</span>
+                    <span class="fs-4 text-danger" >&#8595;{{ dif }} $ today (last day)</span>
+                {% elif dif == 0 %}
+                    <span class="fs-4 text-danger me-2">0 %</span>
+                    <span class="fs-4 text-danger" > 0.00 $</span>
+                {% else %}
+                    <span class="fs-4 text-success me-2">+{{ -delta }} %</span>
+                    <span class="fs-4 text-success" >&#8593;{{ -dif }} $ today (last day)</span>            
+                {% endif %}
+                
 
+            </div>
+        </div>
+    </div>
 
+    <!-- Fundamental statements -->
+    <div class="container mb-3">
+        <div class="row justify-content-center">
+            <div class="col-auto desc">
+                <h3 class="fw-light">Key statistics</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-2">
+        <div class="row">
+            <div class="col">
+                <table class="table table-hover table-bordered">
+                    <tbody>
+                        <tr>
+                            <td>52 Weeks Range</td>
+                            <td>{{ quote.fiftyTwoWeekLow|round(2, 'common') }} — {{ quote.fiftyTwoWeekHigh|round(2, 'common') }}$</td>
+                        </tr>
+                        {{ row('MarketCap', parse_cash(quote.marketCap)) }}
+                        {{ row('Trailing P/E', parse_int(quote.trailingPE)) }}
+                        {{ row('P/B', parse_int(quote.priceToBook)) }}
+                        {{ row('Trailing EPS', quote.trailingEps|round(2, 'common')) }}
+                        {{ row('EV/EBITDA', parse_int(quote.enterpriseToEbitda)) }}
+                        {{ row('Debt/Equity', parse_int(quote.debtToEquity)) }}
+                        {{ row('Beta', quote.beta|round(2, 'common')) }}
+                        <tr>
+                            <td>Dividend</td>
+                            <td>
+                                {% if quote.dividendRate %}
+                                    {{ quote.trailingAnnualDividendRate }} ({{ (quote.trailingAnnualDividendYield * 100)|round(2, 'common') }} %)
+                                {% else %}
+                                    ——                                    
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {{ row('ROE', parse_rate(quote.returnOnEquity)) }}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col">
+                <table class="table table-hover table-bordered">
+                    <tbody>
+                        {{ row('Operating Margin', parse_rate(quote.operatingMargins)) }}
+                        {{ row('EBITDA Margin', parse_rate(quote.ebitdaMargins)) }}
+                        {{ row('Profit Margin', parse_rate(quote.profitMargins)) }}
+                        {{ row('Gross Margin', parse_rate(quote.grossMargins)) }}
+                        {{ row('Operating Cash Flow', parse_cash(quote.operatingCashflow)) }}
+                        {{ row('Free Cash Flow', parse_cash(quote.freeCashflow)) }}
+                        {{ row('Total Cash', parse_cash(quote.totalCash)) }}
+                        {{ row('Total Revenue', parse_cash(quote.totalRevenue)) }}
+                        {{ row('Total Debt', parse_cash(quote.totalDebt)) }}
+                        {{ row('ROA', parse_rate(quote.returnOnAssets)) }}
+                    </tbody>
+                </table>
+            </div>
+        </div>        
+    </div>
+    
+    <!-- Revenue and income statements -->
+    <div class="container">
+        <div class="row mt-1 d-flex justify-content-start">
+            <div class="col-3">
+                <select id="period" class="form-select" aria-label="Period select">
+                    <option selected>Period</option>
+                    <option value="y">Yearly</option>
+                    <option value="q">Quarterly</option>
+                  </select>
+            </div>
+        </div> 
+    </div> 
+    
+    <div class="container">
+        <div class="row p-1">
+            <div class="col">
+                <div id="chart"></div>
+            </div>
+        </div> 
+    </div>
+    
+    <!-- Long business description -->
+    <div class="container mt-3 mb-4 desc">
+        <div class="row justify-content-center">
+            <div class="col fw-light small" style="text-align: justify; text-indent: 5%;" >
+                <p>{{ quote.longBusinessSummary }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% include 'favourites.html' %}
+   
 
 {% endblock %}
+
+{% block script %}
+    <script src="/static/favourites.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script type="text/javascript">
+        // Scirpt for changing graphs
+        $('#period option[value="y"]').prop('selected', true);
+        // $('#state option[value="inc"]').prop('selected', true);
+        var graphs = {{ yearly | safe }};
+        Plotly.react('chart', graphs, {});
+        
+        $(document).ready(function() {
+			var period = $('#period')
+			period.change(function() {
+				if (this.value == 'y') {
+                    Plotly.purge('chart');
+                    var graphs = {{ yearly | safe }};
+                    Plotly.react("chart", graphs, {});
+				} else if (this.value == 'q') {
+                    Plotly.purge('chart');
+                    var graphs = {{ quarterly | safe }};
+                    Plotly.react("chart", graphs, {});
+                }
+			});
+		});
+    </script>
+{% endblock %}
+
