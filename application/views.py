@@ -1,5 +1,4 @@
 
-# from plotly import graph_objs
 import concurrent.futures as cf
 import json
 from datetime import datetime
