@@ -1,5 +1,5 @@
 # StockX — WSGI web-application based on Flask
-#### Video Demo: 
+#### Video Demo: https://youtu.be/duezU2Q3CMA
 #### In this application you can create your portfolio of stocks from US market, analise them, add to list and compare.
 
 Before using you should get API key for IEX cloud service.
