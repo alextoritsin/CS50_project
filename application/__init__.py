@@ -5,6 +5,9 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # create app instance
@@ -24,7 +27,7 @@ if not os.path.exists(os.path.join(basedir, 'stocks.db')):
 bcrypt = Bcrypt(app)
 
 # set up secret key
-app.config['SECRET_KEY'] = '610da25ac8aa58a362ab49de7d2e9c37'
+app.config['SECRET_KEY'] = os.getenv('CS50_SECRET_KEY')
 
 # create login instance
 login_manager = LoginManager(app)
@@ -32,7 +35,7 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Please, log in to access this page'
 login_manager.login_message_category = 'info'
 
-api_key = 'pk_f61364335c1b47cd9add54a5b1e12211'
+api_key = os.getenv('IEX_API_KEY')
 
 
 def lookup(symbol):

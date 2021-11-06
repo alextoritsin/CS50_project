@@ -2,7 +2,7 @@
 {% extends "layout.html" %}
 
 {% block style %}
-  <link href="/static/favourites.css" rel="stylesheet">
+    <link href="/static/favourites.css" rel="stylesheet">
 {% endblock %}
 
 {% block title %}
@@ -46,9 +46,9 @@ Quoted
                     <span class="fs-4 text-success me-2">{{ delta|abs }} %</span>
                     <span class="fs-4 text-success" >({{ rnd(change) }} $)
                         {% if day is boolean %}
-                            &#8593;today
+                            &#8593; today
                         {% else %}
-                            &#8593;on {{ day }}
+                            &#8593; on {{ day }}
                         {% endif %}</span>
                 {% elif change == 0 %}
                     <span class="fs-4 text-muted me-2">0 %</span>
@@ -57,9 +57,9 @@ Quoted
                     <span class="fs-4 text-danger me-2">{{ delta|abs }} %</span>
                     <span class="fs-4 text-danger" >({{ rnd(change) }} $) 
                         {% if day is boolean %}
-                            &#8595;today
+                            &#8595; today
                         {% else %}
-                            &#8595;on {{ day }}
+                            &#8595; on {{ day }}
                         {% endif %}</span>
 
                 {% endif %}
@@ -166,7 +166,6 @@ Quoted
     <script type="text/javascript">
         // Scirpt for changing graphs
         $('#period option[value="y"]').prop('selected', true);
-        // $('#state option[value="inc"]').prop('selected', true);
         var graphs = {{ yearly | safe }};
         Plotly.react('chart', graphs, {});
         

@@ -4,7 +4,6 @@ import json
 import pytz
 from datetime import datetime
 
-
 import okama as ok
 import plotly
 import plotly.express as px
@@ -67,7 +66,8 @@ def login():
         # check if the user exist and password correct
         if user_exist and user_exist.correct_password(entered_password=form.password.data):
             login_user(user_exist)
-            flash(f'Success! You are logged in as {user_exist.username}.', category='success')
+            flash(
+                f'Success! You are logged in as {user_exist.username}.', category='success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('index'))
         else:
@@ -87,7 +87,6 @@ def logout():
 
     # Redirect user to homepage
     return redirect(url_for('homepage'))
-
 
 
 @app.route("/quote", methods=["GET", "POST"])
@@ -126,7 +125,8 @@ def quote():
         # get current time and last trading time
         now = datetime.now(tz).strftime("%B %#d")
         last_tday = session['quote']['date']
-        last_tday = datetime.fromtimestamp(last_tday // 1000).strftime("%B %#d")
+        last_tday = datetime.fromtimestamp(
+            last_tday // 1000).strftime("%B %#d")
         day = (now == last_tday) or last_tday
 
         # create id's with favourite assets
@@ -316,7 +316,8 @@ def password_change():
                 user.password = password
                 db.session.commit()
                 logout_user()
-                flash('Successfully changed name and password. Please, log in', 'success')
+                flash(
+                    'Successfully changed name and password. Please, log in', 'success')
                 return redirect(url_for('login'))
             else:
                 db.session.commit()
@@ -412,8 +413,8 @@ def edit_list(list_id):
 
     if data:
         Favourites.query.filter(Favourites.symbol.in_(data)).\
-                                filter_by(user_id=current_user.id,
-                                        list_id=list_id).delete()
+            filter_by(user_id=current_user.id,
+                      list_id=list_id).delete()
     db.session.commit()
     return redirect(url_for('lists'))
 
