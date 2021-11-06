@@ -10,6 +10,9 @@ In **templates** folder you can find all html templates for this repo. **Applica
 main controller files: `models.py` with database tables, `views.py` with route functions, `forms.py` with classes for specific forms
 and `__init__.py` as an executable module.
 
+**Static** folder contains JavaScript code and CSS files, to supplement Boostrap classes.
+
+Besides IEX Cloud service, this application implemented with free financial libraries: [yfinance](https://pypi.org/project/yfinance/) and [okama](https://github.com/mbk-dev/okama), so sometimes it may have some connection problems.
 
 
 
