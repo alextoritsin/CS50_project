@@ -11,7 +11,7 @@ Search
     {{ form.hidden_tag() }}
     <div class="form-group mb-3">
         <div class="container">
-            <div class="row justify-content-start mb-3">
+            <div class="row mb-4">
                 {{ form.name.label(class="form-control-label") }}
             </div>
             <div class="row justify-content-center">
@@ -36,23 +36,6 @@ Search
             </div>
         </div>
     </div>       
-
-
-    <!-- <div class="form-group mb-2">
-        <div class="col-auto px-1">
-            {% if form.name.errors %}
-                {{ form.name(class="form-control is-invalid", placeholder="Symbol") }}
-                <div class="invalid-feedback">
-                    {% for error in form.name.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
-                </div>
-            {% else %}
-                {{ form.name(class="form-control mb-1 me-1", placeholder="Type company's name", autofocus=true) }}  
-            {% endif %}
-        </div>
-        {{ form.submit(class="btn btn-outline-primary mb-1") }}
-    </div> -->
 </form>
 
 {% if g_JSON_one %}

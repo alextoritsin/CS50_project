@@ -1,4 +1,4 @@
-{% from "macros.html" import parse_cash, parse_rate, parse_int, row %}
+{% from "macros.html" import parse_cash, parse_rate, parse_int, row, rnd %}
 {% extends "layout.html" %}
 
 {% block style %}
@@ -41,19 +41,28 @@ Quoted
     <div class="container mb-3">
         <div class="row">
             <div class="col text-start ms-2">
-                <span class="fs-2 me-2 mb-2">{{ quote.currentPrice|round(2, 'common') }} $</span>
-                {% if dif > 0 %}
-                    <span class="fs-4 text-danger me-2">{{ -delta }} %</span>
-                    <span class="fs-4 text-danger" >&#8595;{{ dif }} $ today (last day)</span>
-                {% elif dif == 0 %}
-                    <span class="fs-4 text-danger me-2">0 %</span>
+                <span class="fs-2 me-2 mb-2">{{ rnd(quote.currentPrice) }} $</span>
+                {% if change > 0 %}
+                    <span class="fs-4 text-success me-2">{{ delta|abs }} %</span>
+                    <span class="fs-4 text-success" >({{ rnd(change) }} $)
+                        {% if day is boolean %}
+                            &#8593;today
+                        {% else %}
+                            &#8593;on {{ day }}
+                        {% endif %}</span>
+                {% elif change == 0 %}
+                    <span class="fs-4 text-muted me-2">0 %</span>
                     <span class="fs-4 text-danger" > 0.00 $</span>
                 {% else %}
-                    <span class="fs-4 text-success me-2">+{{ -delta }} %</span>
-                    <span class="fs-4 text-success" >&#8593;{{ -dif }} $ today (last day)</span>            
-                {% endif %}
-                
+                    <span class="fs-4 text-danger me-2">{{ delta|abs }} %</span>
+                    <span class="fs-4 text-danger" >({{ rnd(change) }} $) 
+                        {% if day is boolean %}
+                            &#8595;today
+                        {% else %}
+                            &#8595;on {{ day }}
+                        {% endif %}</span>
 
+                {% endif %}
             </div>
         </div>
     </div>
@@ -74,20 +83,20 @@ Quoted
                     <tbody>
                         <tr>
                             <td>52 Weeks Range</td>
-                            <td>{{ quote.fiftyTwoWeekLow|round(2, 'common') }} — {{ quote.fiftyTwoWeekHigh|round(2, 'common') }}$</td>
+                            <td>{{ rnd(quote.fiftyTwoWeekLow) }} — {{ rnd(quote.fiftyTwoWeekHigh) }}$</td>
                         </tr>
                         {{ row('MarketCap', parse_cash(quote.marketCap)) }}
                         {{ row('Trailing P/E', parse_int(quote.trailingPE)) }}
                         {{ row('P/B', parse_int(quote.priceToBook)) }}
-                        {{ row('Trailing EPS', quote.trailingEps|round(2, 'common')) }}
+                        {{ row('Trailing EPS', rnd(quote.trailingEps)) }}
                         {{ row('EV/EBITDA', parse_int(quote.enterpriseToEbitda)) }}
                         {{ row('Debt/Equity', parse_int(quote.debtToEquity)) }}
-                        {{ row('Beta', quote.beta|round(2, 'common')) }}
+                        {{ row('Beta', rnd(quote.beta)) }}
                         <tr>
                             <td>Dividend</td>
                             <td>
                                 {% if quote.dividendRate %}
-                                    {{ quote.trailingAnnualDividendRate }} ({{ (quote.trailingAnnualDividendYield * 100)|round(2, 'common') }} %)
+                                    {{ quote.trailingAnnualDividendRate }} ({{ rnd(quote.trailingAnnualDividendYield * 100) }} %)
                                 {% else %}
                                     ——                                    
                                 {% endif %}

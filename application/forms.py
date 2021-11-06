@@ -1,10 +1,10 @@
 import concurrent.futures as cf
 
+from flask import session
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import (HiddenField, IntegerField, PasswordField, SelectField,
+from wtforms import (IntegerField, PasswordField, SelectField,
                      StringField, SubmitField)
-from wtforms.fields.core import SelectMultipleField
 from wtforms.validators import DataRequired, EqualTo, Length, ValidationError
 
 from application import lookup
@@ -12,13 +12,6 @@ from application.models import Holdings, Users
 
 
 class RegisterForm(FlaskForm):
-
-    # the func name is specific to validate all username(s)
-    def validate_username(self, user_to_check):
-        user = Users.query.filter_by(username=user_to_check.data).first()
-        if user:
-            raise ValidationError('Username already exist!')
-
     username = StringField(label='username', validators=[
                            Length(min=4, max=30), DataRequired()])
     password = PasswordField(label='password', validators=[
@@ -26,6 +19,12 @@ class RegisterForm(FlaskForm):
     confirm_password = PasswordField(label='confirm_password', validators=[
                                      EqualTo('password'), DataRequired()])
     submit = SubmitField(label='Create Account')
+
+    # the func name is specific to validate all username(s)
+    def validate_username(self, user_to_check):
+        user = Users.query.filter_by(username=user_to_check.data).first()
+        if user:
+            raise ValidationError('Username already exist!')
 
 
 class LoginForm(FlaskForm):
@@ -39,13 +38,11 @@ class QuoteForm(FlaskForm):
     submit = SubmitField('Quote')
 
     def validate_symbol(self, field):
-        if lookup(field.data) == None:
+        symbol = field.data.replace('-', '.')
+        quote = lookup(symbol)
+        session['quote'] = quote
+        if not quote:
             raise ValidationError("Invalid ticker.")
-
-
-class Quote_to_buyForm(FlaskForm):
-    symbol = StringField(label='symbol', validators=[DataRequired()])
-    submit = SubmitField('Search')
 
 
 class SellAsset(FlaskForm):
@@ -84,29 +81,36 @@ class BuyAsset(FlaskForm):
 
 
 class PasswordChangeForm(FlaskForm):
+    username = StringField(label='Change Account Name',
+                           validators=[DataRequired()])
     current_password = PasswordField(
-        label='current_password', validators=[DataRequired()])
-    password = PasswordField(label='password', validators=[
-                             Length(min=6), DataRequired()])
+        label='Change Password')
+    password = PasswordField(label='password')
     confirm_password = PasswordField(label='confirm_password', validators=[
-                                     EqualTo('password'), DataRequired()])
-    submit = SubmitField(label='Change Password')
+                                     EqualTo('password')])
+    submit = SubmitField(label='Save changes')
+
+    def validate_username(self, field):
+        user = Users.query.filter_by(username=field.data).first()
+        if user and user.id != current_user.id:
+            raise ValidationError("This name is already taken")
+
+    def validate_current_password(self, field):
+        user = Users.query.get(int(current_user.id))
+        if field.data and not user.correct_password(entered_password=field.data):
+            raise ValidationError("Invalid password")
+
+    def validate_password(self, field):
+        if field.data:
+            if len(field.data) < 6:
+                raise ValidationError("Password must be at least 6 characters")
+            if field.data == self.current_password.data:
+                raise ValidationError("Provide new password")
 
 
 class CreateList(FlaskForm):
     name = StringField(validators=[Length(min=2, max=15), DataRequired()])
     submit = SubmitField('Create')
-
-
-class EditFieldFrom(FlaskForm):
-    name = SelectMultipleField('Select companies', choices=[])
-    submit = SubmitField('dfdfdf')
-
-
-class AddFavouriteForm(FlaskForm):
-    name = HiddenField()
-    list_name = SelectField('Select list', choices=[])
-    submit = SubmitField('Add to list')
 
 
 class SearchForm(FlaskForm):
@@ -119,8 +123,7 @@ class SearchForm(FlaskForm):
         symbols = []
         for item in submit:
             if len(item) > 1:
-                symbols.append(item.strip(" "))
-        print("submit:", symbols)
+                symbols.append(item.strip(" ").replace('-', '.'))
         with cf.ThreadPoolExecutor() as executor:
             responds = executor.map(lookup, symbols)
             for item in responds:

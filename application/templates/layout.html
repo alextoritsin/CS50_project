@@ -35,7 +35,7 @@
 <body>
     {% if current_user.is_authenticated %}
 
-        <nav class="navbar navbar-expand-md navbar-light bg-light border">
+        <nav class="navbar navbar-expand-md navbar-light border">
             <div class="container-fluid">
                 <a class="navbar-brand font-effect-anaglyph" href="{{ url_for('index') }}">StockX</a>
                 <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler"
@@ -49,16 +49,13 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('buy') }}">Buy</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('sell') }}">Sell</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('lists') }}">Lists</a></li>
-                        <!-- <li class="nav-item"><a class="nav-link" href="{{ url_for('add_asset') }}">Add</a></li> -->
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('history') }}">History</a></li>
                     </ul>
                     <ul class="navbar-nav ms-auto mt-2">
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Account</a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Deposit Cash</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('password_change') }}">Change Password</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('password_change') }}">Settings</a></li>
                             </ul>
                         </li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Log Out</a></li>
@@ -67,11 +64,9 @@
             </div>
         </nav>
     {% else %}
-        <nav class="navbar navbar-expand-md navbar-light bg-light border">
+        <nav class="navbar navbar-expand-md navbar-light border">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#"><span class="blue">C</span><span
-                        class="red">$</span><span class="yellow">5</span><span class="green">0</span> <span
-                        class="red">Finance</span></a>
+                <a class="navbar-brand font-effect-anaglyph" href="{{ url_for('index') }}">StockX</a>
                 <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler"
                     data-bs-target="#navbarSupportedContent" data-bs-toggle="collapse" type="button">
                     <span class="navbar-toggler-icon"></span>
@@ -88,22 +83,21 @@
     {% endif %}
 
     {% if get_flashed_messages() %}
-    <header>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
-
-    </header>
+        <header>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </header>
     {% endif %}
 
-    <main class="container p-5">
+    <main class="container p-5  ">
         {% block main %}{% endblock %}
     </main>
 

@@ -1,7 +1,9 @@
 
 import concurrent.futures as cf
 import json
+import pytz
 from datetime import datetime
+
 
 import okama as ok
 import plotly
@@ -14,8 +16,8 @@ from flask import (flash, jsonify, redirect, render_template, request, session,
 from flask_login import current_user, login_required, login_user, logout_user
 
 from application import app, db, lookup
-from application.forms import (AddFavouriteForm, BuyAsset, CreateList,
-                               LoginForm, PasswordChangeForm, Quote_to_buyForm,
+from application.forms import (BuyAsset, CreateList,
+                               LoginForm, PasswordChangeForm,
                                QuoteForm, RegisterForm, SearchForm, SellAsset)
 from application.models import Favourites, History, Holdings, Lists, Users
 
@@ -24,6 +26,7 @@ from application.models import Favourites, History, Holdings, Lists, Users
 @login_required
 def companies():
     """Construct json data for US companies"""
+    # query US companies
     query = ok.symbols_in_namespace('US')
     # change column names
     query = query.rename(columns={"name": "label", "ticker": "value"})
@@ -41,8 +44,6 @@ def homepage():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
-    # if current_user.is_authenticated:
-    #     return redirect(url_for('index'))
     form = RegisterForm()
     # check if validation is ok and user clicked on submit button
     if form.validate_on_submit():
@@ -50,30 +51,25 @@ def register():
                          password=form.password.data)
         db.session.add(new_user)
         db.session.commit()
-        login_user(new_user)
         flash(
-            f'Account created. Logged in as {new_user.username}.', category='success')
-        return redirect(url_for('homepage'))
-    logout_user()
+            f'Account created for {new_user.username}. Please, log in.', 'success')
+        return redirect(url_for('login'))
     return render_template("register.html", form=form)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
     form = LoginForm()
+    # grab user data from db
+    user_exist = Users.query.filter_by(username=form.username.data).first()
     if form.validate_on_submit():
-        # grab user data from db
-        user_exist = Users.query.filter_by(username=form.username.data).first()
 
         # check if the user exist and password correct
         if user_exist and user_exist.correct_password(entered_password=form.password.data):
             login_user(user_exist)
+            flash(f'Success! You are logged in as {user_exist.username}.', category='success')
             next_page = request.args.get('next')
-            flash(
-                f'Success! You are logged in as {user_exist.username}.', category='success')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            return redirect(next_page or url_for('index'))
         else:
             flash(f'Username and password do not match. Try again.',
                   category='danger')
@@ -93,39 +89,6 @@ def logout():
     return redirect(url_for('homepage'))
 
 
-@app.route("/add_asset", methods=["GET", "POST"])
-@login_required
-def add_asset():
-    """Example for add asset route"""
-    form = QuoteForm()
-    add_form = AddFavouriteForm()
-    # lists = Lists.query.filter_by(user_id=current_user.id).first()
-    add_form.list_name.choices = [(row.id, row.name) for row in
-                                  Lists.query.filter_by(user_id=current_user.id)]
-
-    if form.validate_on_submit():
-        symbol = form.symbol.data
-        qt = lookup(symbol)
-
-        session["company"] = qt
-
-        return render_template('add_asset.html', qt=qt, add_form=add_form)
-
-    if add_form.validate_on_submit():
-        list_id = int(add_form.list_name.data)
-        company = Favourites.query.filter_by(
-            company=session['company']['longName'], list_id=list_id).first()
-        if company:
-            flash('Company already in list', 'info')
-            return redirect(url_for('add_asset'))
-        company = Favourites()
-        company.add_tolist(current_user, list_id, session['company']['longName'],
-                           session['company']['symbol'])
-        flash('Successfully added to list', 'success')
-        return redirect(url_for('add_asset'))
-
-    return render_template('add_asset.html', qt=False, form=form)
-
 
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
@@ -143,20 +106,30 @@ def quote():
 
         def get_quarterly(symbol):
             return yf.Ticker(symbol).quarterly_financials
-
+        # run concurrent queries
         with cf.ThreadPoolExecutor() as executor:
             info = executor.submit(get_info, symbol)
             year = executor.submit(get_yearly, symbol)
             quarter = executor.submit(get_quarterly, symbol)
+            # iex = executor.submit(lookup, symbol)
 
         quote = info.result()
-        session['company']['symbol'] = quote['symbol']
-        session['company']['longName'] = quote['longName']
+        session['symbol'] = quote['symbol']
+        session['longName'] = quote['longName']
         prev = quote['previousClose']
-        current = quote['currentPrice']
-        dif = round(prev - current, 2)
-        delta = round((dif / prev) * 100, 2)
+        change = session['quote']['change']
+        delta = round((change / prev) * 100, 2)
 
+        # get timezone
+        tz = pytz.timezone(quote['exchangeTimezoneName'])
+
+        # get current time and last trading time
+        now = datetime.now(tz).strftime("%B %#d")
+        last_tday = session['quote']['date']
+        last_tday = datetime.fromtimestamp(last_tday // 1000).strftime("%B %#d")
+        day = (now == last_tday) or last_tday
+
+        # create id's with favourite assets
         lists = Lists.query.filter_by(user_id=current_user.id).all()
         in_fav = Favourites.query.filter_by(
             user_id=current_user.id, symbol=quote['symbol']).all()
@@ -194,13 +167,13 @@ def quote():
                               )
             graph = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
             return graph
-
+        # make graphs with 2 periods
         yearly = makeGraph(year.result(), quote['longName'], 'Yearly')
         quarterly = makeGraph(quarter.result(), quote['longName'], 'Quarterly')
 
         return render_template('quoted.html', form=form, ids=ids, in_fav=in_fav,
-                               quote=quote, delta=delta, dif=dif, lists=lists,
-                               yearly=yearly, quarterly=quarterly)
+                               quote=quote, delta=delta, lists=lists, change=change,
+                               yearly=yearly, quarterly=quarterly, day=day)
     return render_template('quote.html', form=form)
 
 
@@ -285,10 +258,10 @@ def sell():
             f'Successfully sold {input_shares} share(s) of {company.company}', category='success')
         return redirect(url_for('sell'))
 
-    return render_template("/sell.html", form=form, check=True, holdings=holdings)
+    return render_template("/sell.html", form=form, holdings=holdings)
 
 
-@app.route("/index")
+@app.get("/index")
 @login_required
 def index():
     '''Show portfolio of stocks'''
@@ -306,7 +279,7 @@ def index():
     price_on_buy = 0
 
     symbols = [row.symbol for row in holdings]
-
+    # calculate future values with concurrent method
     with cf.ThreadPoolExecutor() as executor:
         quotes = executor.map(lookup, symbols)
         for index, quote in enumerate(quotes):
@@ -320,38 +293,44 @@ def index():
     return render_template('index.html', holdings=holdings, total=grand_total, cash=cash, delta=dif)
 
 
-@app.route("/history")
+@app.get("/history")
 @login_required
 def history():
     """Show history of transactions"""
-    operations = History.query.all()
-    length = len(operations)
-    return render_template("history.html", operations=operations, length=length)
+    operations = History.query.filter_by(user_id=current_user.id).all()
+    return render_template("history.html", operations=operations)
 
 
 @app.route("/password_change", methods=["GET", "POST"])
 @login_required
 def password_change():
-    """Change password"""
+    """Change password and username"""
+    user = Users.query.filter_by(id=current_user.id).first()
     form = PasswordChangeForm()
-    if request.method == "POST":
-        pswd = form.current_password.data
-        user = Users.query.filter_by(id=current_user.id).first()
-        check = user.correct_password(entered_password=pswd)
-        # check if the user exist and password correct
-        if not user or not check:
-            return render_template('password_change.html', check=False, form=form)
-
-        # check if validation is ok and user clicked on submit button
-        if form.validate_on_submit():
-            user.password = form.password.data
+    if form.validate_on_submit():
+        name = form.username.data
+        password = form.password.data
+        if name != user.username:
+            user.username = name
+            if password:
+                user.password = password
+                db.session.commit()
+                logout_user()
+                flash('Successfully changed name and password. Please, log in', 'success')
+                return redirect(url_for('login'))
+            else:
+                db.session.commit()
+                flash(f'Changed name to "{name}"', 'success')
+                return redirect(url_for('password_change'))
+        elif password:
+            user.password = password
             db.session.commit()
             logout_user()
-            flash(f'Password has been changed. Please, log in.', category='success')
+            flash('Successfully changed password. Please, log in', 'success')
             return redirect(url_for('login'))
-        return render_template('password_change.html', form=form, check=check)
-    else:
-        return render_template("password_change.html", form=form, check=True)
+        else:
+            return redirect(url_for('password_change'))
+    return render_template('password_change.html', form=form, value=user.username)
 
 
 @app.route("/lists", methods=["GET", "POST"])
@@ -360,19 +339,11 @@ def lists():
     """Manage lists with favourite assets"""
     form = CreateList()
     lists = Lists.query.filter_by(user_id=current_user.id).all()
-    # holdings = Holdings.query.filter_by(user_id=current_user.id).all()
-    # quotes = []
-
-    # for row in holdings:
-    #     quote = lookup(row.symbol)
-    #     quotes.append(quote['name'])
-    # print(quotes)
     if form.validate_on_submit():
         lists = Lists()
         lists.new_list(current_user, form.name.data)
         flash(f'Successfully created new list', category='success')
         return redirect(url_for('lists'))
-    # return 'ok'
     return render_template("lists.html", lists=lists, form=form)
 
 
@@ -381,13 +352,11 @@ def lists():
 def favourites():
     """Get post request with favourites list id's"""
     data = request.get_json()
-    print('data recieved', data['data'])
-    symbol = session['company']['symbol']
-    corp = session['company']['longName']
+    symbol = session['symbol']
+    corp = session['longName']
     set_my_ids = Favourites.query.filter_by(user_id=current_user.id,
                                             symbol=symbol).all()
-    print("my id's", set_my_ids)
-    if data['data'] == None:
+    if not data['data']:
         # asset have been deleted from favourites if any
         if len(set_my_ids) > 0:
             set_my_ids = {row.list_id for row in set_my_ids}
@@ -395,7 +364,6 @@ def favourites():
                 filter_by(symbol=symbol).delete()
     else:
         set_fav_ids = set(data['data'])
-        print('submit:', set_fav_ids)
         if len(set_my_ids) == 0:
             # if no such a company in user lists, add all that in set_fav_ids
             for id in set_fav_ids:
@@ -442,9 +410,10 @@ def edit_list(list_id):
     if name != lst.name:
         lst.name = name
 
-    Favourites.query.filter(Favourites.symbol.in_(data)).\
-        filter_by(user_id=current_user.id,
-                  list_id=list_id).delete()
+    if data:
+        Favourites.query.filter(Favourites.symbol.in_(data)).\
+                                filter_by(user_id=current_user.id,
+                                        list_id=list_id).delete()
     db.session.commit()
     return redirect(url_for('lists'))
 
@@ -460,8 +429,8 @@ def search():
     last_two = (now + relativedelta(months=-25)).strftime("%Y-%m")
     last_five = (now + relativedelta(months=-61)).strftime("%Y-%m")
 
-    def makeGraph(period, data):
-        df = ok.AssetList(data, first_date=period).wealth_indexes
+    def makeGraph(period, form_data):
+        df = ok.AssetList(form_data, first_date=period).wealth_indexes
         col_names = list(df.columns)
         fig = px.line(df, x=df.index.astype(str), y=col_names,
                       labels={"x": "", "value": "Wealth index",

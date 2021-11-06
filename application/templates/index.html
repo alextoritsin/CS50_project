@@ -70,7 +70,7 @@ Holdings
 
 {% else %}
 
-    <p>You have ${{ current_user.cash }} in cash.</p>
+    <p>You have <b>${{ current_user.cash }}</b>  in cash.</p>
     <p>Let's go <a class="text-decoration-none" href="{{ url_for('buy') }}">buy</a> some stocks.</p>
 
 {% endif %}
